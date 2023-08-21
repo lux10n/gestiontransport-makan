@@ -3,6 +3,9 @@
     if(!isset($_SESSION['role'])){
         header('Location: ../login.php');
     }
+	if($_SESSION['role']!='client'){
+        header('Location: ../login.php');
+    }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -14,7 +17,7 @@
 		<title><?php echo(customname('Portail Client')) ?></title>
 		<!-- Core theme CSS (includes Bootstrap)-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-		<link rel="stylesheet" href="../assets/css/client.css">
+		<link rel="stylesheet" href="../assets/css/dashboard.css">
     </head>
     <body>
         <div class="d-flex" id="wrapper">
@@ -58,6 +61,7 @@
 								<thead>
 									<tr>
 										<td>#</td>
+										<td>Date de la commande</td>
 										<td>Quantité de sable</td>
 										<td>Date de livraison</td>
 										<td>Lieu de livraison</td>
@@ -78,10 +82,11 @@
 												while ($camion=$camioninfo->fetch_assoc()){
 													echo "<tr>";
 													echo "<td>".$row['id_commande']."</td>";
+													echo "<td>".$row['date_commande']."</td>";
 													echo "<td>".$row['quantitesable_commande']." KG</td>";
 													echo "<td>".$row['datelivraison_commande']."</td>";
-													echo "<td>".$row['lieulivraison_commande']."</td>";
-													echo "<td>Camion".$camion['couleur_camion']." (".$camion['nnumplaque_camion'].")</td>";
+													echo "<td>".$commmunes[$row['lieulivraison_commande']]."</td>";
+													echo "<td>Camion ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
 													echo "<td>".$row['prix_commande']."</td>";
 													switch ($row['statut_commande']) {
 														case 'validated':

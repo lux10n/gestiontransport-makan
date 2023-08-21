@@ -67,7 +67,7 @@
         url:'functions/auth.php',
         data:"action=register&nom="+$('#nom').val()+"&prenom="+$('#prenom').val()+"&tel="+$('#tel').val()+"&email="+$('#email').val()+"&password="+$('#password').val()+"&password2="+$('#password2').val(),
         success:function(data){
-          response=JSON.parse(data);
+          response=data;
           if(response.success){
             $(".response").html('<div class="alert alert-success alert-dismissible">Inscription validée, veuillez patienter...</div>')
             setTimeout(() => {

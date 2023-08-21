@@ -12,6 +12,20 @@ function customname($name){
     return $name.' | '.APP_NAME;
 }
 $conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
+$commmunes=[
+    "abobo"=>"Abobo",
+    "anyama"=>"Anyama",
+    "adjame"=>"Adjamé",
+    "attecoube"=>"Attécoubé",
+    "bingerville"=>"Bingerville",
+    "cocody"=>"Cocody",
+    "koumassi"=>"Koumassi",
+    "marcory"=>"Marcory",
+    "plateau"=>"Le Plateau",
+    "portbouet"=>"Port-Bouët",
+    "treichville"=>"Treichville",
+    "yopougon"=>"Yopougon",
+];
 
 if ($conn->connect_error) {
     die("<script> alert(`Connection failed: ".$conn->connect_error."`);</script>");

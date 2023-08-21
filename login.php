@@ -51,7 +51,7 @@
         url:'functions/auth.php',
         data:"action=login&email="+$('#email').val()+"&password="+$('#password').val(),
         success:function(data){
-          response=JSON.parse(data);
+          response=data;
           if(response.success){
             $(".response").html('<div class="alert alert-success alert-dismissible">Identifiants Valides...</div>')
             setTimeout(() => {
