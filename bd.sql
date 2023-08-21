@@ -33,6 +33,7 @@ CREATE TABLE panne(
     id_camion int NOT NULL,
     datedebut_panne timestamp NOT NULL,
     datefin_panne timestamp NULL,
+    cout_panne int NOT NULL,
     PRIMARY KEY (id_panne),
     FOREIGN KEY (id_camion) REFERENCES camion(id_camion)
 );

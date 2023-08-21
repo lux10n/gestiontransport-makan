@@ -1,19 +1,10 @@
 <?php
-    require('../../config.php');
+    require('../config.php');
     if(!isset($_SESSION['role'])){
-        header('Location: ../../login.php');
+        header('Location: ../login.php');
     }
 	if($_SESSION['role']!='admin'){
-        header('Location: ../../login.php');
-    }
-    if(isset($_POST['marque'],$_POST['couleur'],$_POST['numplaque'])){
-        $marque=$_POST['marque'];
-        $couleur=$_POST['couleur'];
-        $numplaque=$_POST['numplaque'];
-        $stmt = $conn->prepare("INSERT INTO camion (marque_camion, couleur_camion, numplaque_camion) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $marque,$couleur,$numplaque);
-        $stmt->execute();
-        header('Location: /gestiontransport/admin/camions/');
+        header('Location: ../login.php');
     }
 ?>
 <!DOCTYPE html>
@@ -23,9 +14,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<meta name="description" content=""/>
 		<meta name="author" content=""/>
-		<title><?php echo(customname('Enregistrer un véhicule')) ?></title>
+		<title><?php echo(customname('Commandes')) ?></title>
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-		<link rel="stylesheet" href="../../assets/css/dashboard.css">
+		<link rel="stylesheet" href="../assets/css/dashboard.css">
     </head>
     <body>
         <div class="d-flex" id="wrapper">
@@ -34,9 +25,9 @@
                 <div class="list-group list-group-flush">
 					<a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/" >Tableau de bord</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commandes.php">Commandes</a>
-                    <a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/clients.php">Gestion des clients</a>
+                    <a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/clients.php">Gestion des clients</a>
                 </div>
             </div>
             <div id="page-content-wrapper">
@@ -51,7 +42,7 @@
                                         <a class="dropdown-item" href="/gestiontransport/admin/commandes.php">Commandes</a>
                                         <a class="dropdown-item" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="../../logout.php">Déconnexion</a>
+                                        <a class="dropdown-item" href="../logout.php">Déconnexion</a>
                                     </div>
                                 </li>
                             </ul>
@@ -59,30 +50,73 @@
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h1 class="mt-4">Enregistrer un véhicule</h1>
+                    <h1 class="my-4">Liste des clients - <?php echo APP_NAME ?></h1>
 					<div class="row mb-4">
-                    <div class="col-xl-6 p-5">
-                            <form id="save" method="POST">
-                                <div class="form-floating mb-3">
-                                    <input class="form-control" id="marque" name="marque" type="text" placeholder="Ex: TATA" required/>
-                                    <label for="marque">Marque du véhicule</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <input class="form-control" id="couleur" name="couleur" type="text" placeholder="Ex: TATA" required/>
-                                    <label for="couleur">Couleur du véhicule</label>
-                                </div>
-                                <div class="form-floating mb-3">
-                                    <input class="form-control" id="numplaque" name="numplaque" type="text" placeholder="Ex: TATA" required/>
-                                    <label for="numplaque">Numéro d'immatriculation du véhicule</label>
-                                </div>
-                                <div class="d-grid"><button class="btn btn-primary btn-lg" type="submit">Enregistrer</button></div>
-                            </form>
-                        </div>
-                    </div>
+						<div class="col">
+							<table class="table table-bordered table-hover table-striped">
+								<thead>
+									<tr>
+										<td>#</td>
+										<td>Nom</td>
+										<td>Prénoms</td>
+										<td>Téléphone</td>
+										<td>E-Mail</td>
+									</tr>
+								</thead>
+								<tbody>
+									<?php 
+										$sql = "SELECT * FROM client ORDER BY id_client DESC";
+										$result = $conn->query($sql);
+										if ($result->num_rows > 0 ) {
+											while($row = $result->fetch_assoc()) {
+                                                echo "<tr>";
+                                                echo "<td>".$row['id_client']."</td>";
+                                                echo "<td>".$row['nom_client']."</td>";
+                                                echo "<td>".$row['prenom_client']."</td>";
+                                                echo "<td>".$row['tel_client']."</td>";
+                                                echo "<td>".$row['email_client']."</td>";
+                                                echo "</tr>";
+                                            }
+										} else {					
+											echo ('<tr><td colspan=7><p class="text-center mt-2">Aucune donnée à afficher.<p></td></tr>');
+										}
+									?>
+								</tbody>
+							</table>
+						</div>
+					</div>
 				</div>
             </div>
         </div>
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
+        <script>
+            function validate(id){
+                $.ajax({
+                    url:'../functions/admin.php',
+                    method:'POST',
+                    data:'action=validate&id_commande='+id,
+                    error:function(){
+                        alert('Une erreur est survenue, veuillez rééssayer.')
+                    },
+                    complete:function(){
+                        location.reload();
+                    }
+                })
+            }
+            function cancel(id){
+                $.ajax({
+                    url:'../functions/admin.php',
+                    method:'POST',
+                    data:'action=cancel&id_commande='+id,
+                    error:function(){
+                        alert('Une erreur est survenue, veuillez rééssayer.')
+                    },
+                    complete:function(){
+                        location.reload();
+                    }
+                })
+            }
+        </script>
     </body>
 </html>

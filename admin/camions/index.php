@@ -15,13 +15,11 @@
 		<meta name="description" content=""/>
 		<meta name="author" content=""/>
 		<title><?php echo(customname('Gestion des véhicules')) ?></title>
-		<!-- Core theme CSS (includes Bootstrap)-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 		<link rel="stylesheet" href="../../assets/css/dashboard.css">
     </head>
     <body>
         <div class="d-flex" id="wrapper">
-            <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light"><?php echo APP_NAME; ?></div>
                 <div class="list-group list-group-flush">
@@ -29,11 +27,10 @@
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commandes.php">Commandes</a>
                     <a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/clients.php">Gestion des clients</a>
                 </div>
             </div>
-            <!-- Page content wrapper-->
             <div id="page-content-wrapper">
-                <!-- Top navigation-->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                     <div class="container-fluid">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -52,7 +49,6 @@
                         </div>
                     </div>
                 </nav>
-                <!-- Page content-->
                 <div class="container-fluid">
                     <h1 class="my-4">Liste des véhicules - <?php echo APP_NAME; ?> <a class="btn btn-primary mx-3" href="enregistrer.php">Enregistrer un véhicule</a></h1>
                     <div class="row mb-4">
@@ -61,52 +57,60 @@
 								<thead>
 									<tr>
 										<td>#</td>
-										<td>Client</td>
-										<td>Date de la commande</td>
-										<td>Quantité de sable</td>
-										<td>Date de livraison</td>
-										<td>Lieu de livraison</td>
-										<td>Véhicule de livraison</td>
-										<td>Coût total</td>
-										<td>Statut</td>
-										<td>Action</td>
+										<td>Marque</td>
+										<td>Couleur</td>
+										<td>Num. d'immmatriculation</td>
+										<td>Etat</td>
 									</tr>
 								</thead>
 								<tbody>
 									<?php 
-										$sql = "SELECT *, (DATE(NOW()) - INTERVAL 7 DAY) AS diff FROM commande WHERE date_commande >= (DATE(NOW()) - INTERVAL 7 DAY) ORDER BY id_commande DESC";
+										$sql = "SELECT * FROM camion ORDER BY id_camion DESC";
 										$result = $conn->query($sql);
 										if ($result->num_rows > 0 ) {
 											while($row = $result->fetch_assoc()) {
 												$id_camion=$row['id_camion'];
-												$camionsql="SELECT * FROM camion where id_camion = '$id_camion'";
+                                                $statut_camion='disponible';
+                                                $camionsql="SELECT * FROM camion where id_camion = '$id_camion'";
 												$camioninfo=$conn->query($camionsql);
 												while ($camion=$camioninfo->fetch_assoc()){
-                                                    $id_client=$row['id_client'];
-                                                    $clientsql="SELECT * FROM client where id_client = '$id_client'";
-                                                    $clientinfo=$conn->query($clientsql);
-                                                    while ($client=$clientinfo->fetch_assoc()){    
-                                                        echo "<tr>";
-                                                        echo "<td>".$row['id_commande']."</td>";
-                                                        echo "<td>".$client['nom_client'].' '.$client['prenom_client']."</td>";
-                                                        echo "<td>".$row['date_commande']."</td>";
-                                                        echo "<td>".$row['quantitesable_commande']." KG</td>";
-                                                        echo "<td>".$row['datelivraison_commande']."</td>";
-                                                        echo "<td>".$commmunes[$row['lieulivraison_commande']]."</td>";
-                                                        echo "<td>Camion ".$camion['marque_camion']." ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
-                                                        echo "<td>".$row['prix_commande']."</td>";
-                                                        switch ($row['statut_commande']) {
-                                                            case 'validated':
-                                                                echo "<td><span class='text-success'>Validé</span></td>";
-                                                                echo "<td><button class='btn btn-danger' onclick=cancel(".$row['id_commande'].")>Annuler</button></td>";
-                                                                break;
-                                                            default:
-                                                                echo "<td><span class='text-warning'>En Attente</span></td>";
-                                                                echo "<td><button class='btn btn-success' onclick=validate(".$row['id_commande'].")>Valider</button></td>";
-                                                                break;
-                                                        }
-                                                        echo "</tr>";
+                                                    $camions_en_panne_sql="SELECT id_camion FROM camion c
+                                                    WHERE id_camion=$id_camion AND NOT EXISTS (
+                                                        SELECT * FROM panne p 
+                                                        WHERE p.id_camion = c.id_camion 
+                                                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= NOW() )
+                                                    );";
+                                                    $camions_en_panne=$conn->query($camions_en_panne_sql);
+                                                    if ($camions_en_panne->num_rows == 0 ) { 
+                                                        $statut_camion='panne';
                                                     }
+                                                    $camions_en_livraison_sql="SELECT id_camion FROM camion c
+                                                    WHERE id_camion=$id_camion AND NOT EXISTS(
+                                                        SELECT * FROM commande com 
+                                                        WHERE com.id_camion = c.id_camion 
+                                                        AND (com.datelivraison_commande >= DATE_SUB(NOW(), INTERVAL 90 MINUTE) AND com.datelivraison_commande <= DATE_ADD(NOW(), INTERVAL 90 MINUTE) )
+                                                    );";
+                                                    $camions_en_livraison=$conn->query($camions_en_livraison_sql);
+                                                    if ($camions_en_livraison->num_rows == 0 ) { 
+                                                        $statut_camion='livraison';
+                                                    }
+                                                    echo "<tr>";
+                                                    echo "<td>".$row['id_camion']."</td>";
+                                                    echo "<td>".strtoupper($row['marque_camion'])."</td>";
+                                                    echo "<td>".ucfirst($row['couleur_camion'])."</td>";
+                                                    echo "<td>".$row['numplaque_camion']."</td>";
+                                                    switch ($statut_camion) {
+                                                        case 'panne':
+                                                            echo "<td><span class='text-warning'>En Panne</span></td>";
+                                                            break;
+                                                        case 'livraison':
+                                                            echo "<td><span class='text-primary'>En Livraison</span></td>";
+                                                            break;
+                                                        default:
+                                                            echo "<td><span class='text-success'>Disponible</span></td>";
+                                                            break;
+                                                    }
+                                                    echo "</tr>";
 												}
 											}
 										} else {					
@@ -120,10 +124,8 @@
 				</div>
             </div>
         </div>
-        <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
-        <!-- Core theme JS-->
         <script>
             function validate(id){
                 $.ajax({

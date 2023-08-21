@@ -3,160 +3,101 @@
     header('Content-Type: application/json; charset=utf-8');
     if(isset($_POST['action'])){
 		$action=$_POST['action'];
-        if($action=='estimer'){
-            $livraisonpossible=true;
-			if(isset($_POST['quantitesable'],$_POST['datelivraison'],$_POST['lieulivraison'])){
-                $quantitesable=$_POST['quantitesable'];
-                $datelivraison=date("Y-m-d H:i", strtotime($_POST['datelivraison']));
-                $datelivraison_m90=date_sub(date_create($datelivraison),date_interval_create_from_date_string("90 minutes"))->format('Y-m-d H:i');
-                $datelivraison_p90=date_add(date_create($datelivraison),date_interval_create_from_date_string("90 minutes"))->format('Y-m-d H:i');
-                $lieulivraison=$_POST['lieulivraison'];
-                $heurelivraison = intval(date("H", strtotime($_POST['datelivraison'])));
-                $jourlivraison = intval(date("w", strtotime($_POST['datelivraison'])));
-                if($jourlivraison == 0 or ($heurelivraison <=7 or $heurelivraison >= 17)){
-                    $livraisonpossible=false;
+        if($action=='validate'){
+			if(isset($_POST['id_commande'])){
+                $success=true;
+                $id_commande=$_POST['id_commande'];
+                // chercher les camions dispo
+                $commandes_exist_sql="SELECT * FROM commande WHERE id_commande=$id_commande;";
+                $commandes_exist=$conn->query($commandes_exist_sql);
+                if ($commandes_exist->num_rows == 0 ) { 
+                    $success=false;
                 }
-                if($livraisonpossible){
-                    // chercher les camions dispo
-                    $camions_dispo_sql="SELECT id_camion
-                    FROM camion c
-                    WHERE NOT EXISTS (
-                        SELECT * FROM panne p 
-                        WHERE p.id_camion = c.id_camion 
-                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') ) ORDER BY id_panne LIMIT 1
-                    ) AND NOT EXISTS(
-                        SELECT * FROM commande com 
-                        WHERE com.id_camion = c.id_camion 
-                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') )
-                    );";
-                    $camions_dispo=$conn->query($camions_dispo_sql);
-                    if ($camions_dispo->num_rows == 0 ) { 
-                        $livraisonpossible=false;
+                if($success){
+                    // valider commande
+                    $commande_validate_sql="UPDATE commande SET statut_commande = 'validated' WHERE id_commande=$id_commande;";
+                    $commande_validate=$conn->query($commande_validate_sql);
+                    if (!$commande_validate) { 
+                        $success=false;
                     }
                 }
-                // calculer prix
-                $kilosable=250;
-                $prixgonflé = 300; // 1h avant de fermer, samedis soirs
-                if($heurelivraison==16 or ($jourlivraison==6 and $heurelivraison > 12)){
-                    $kilosable=$prixgonflé;
-                }
-                $prixlivraison=0;
+                if($success){
+                    // envoyer facture
+                    while($row = $commandes_exist->fetch_assoc()) {
+                        $id_client=$row["id_client"];
+                        $clientsql="SELECT * FROM client where id_client = '$id_client'";
+                        $clientinfo=$conn->query($clientsql);
+                        while ($client=$clientinfo->fetch_assoc()){    
+                            $to = $client['email_client'];
+                            $id_camion=$row['id_camion'];
+                            $camionsql="SELECT * FROM camion where id_camion = '$id_camion'";
+                            $camioninfo=$conn->query($camionsql);
+                            while ($camion=$camioninfo->fetch_assoc()){
+                                $subject = 'Votre Facture - '.APP_NAME;
+                                $message = '
+                                    <html>
+                                        <head>
+                                            <title>Votre Facture - '.APP_NAME.'</title>
+                                        </head>
+                                        <body>
+                                            <p>Votre commande de livraison de sable a été validée.</p>
+                                            <p><b>Détails de la commande</b></p><br>
+                                            <table>
+                                                <tr>
+                                                    <td>Client</td>
+                                                    <td>'.$client['nom_client'].' '.$client['prenom_client'].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Numéro de commande</td>
+                                                    <td>'.$row['id_commande'].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Date de commande</td>
+                                                    <td>'.$row['date_commande'].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Quantité de sable</td>
+                                                    <td>'.$row['quantitesable_commande'].' KG</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Date et heure de livraison</td>
+                                                    <td>'.$row['datelivraison_commande'].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Lieu de livraison</td>
+                                                    <td>'.$communes[$row['lieulivraison_commande']].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>Véhicule de livraison</td>
+                                                    <td>Camion '.strtoupper($camion['marque_camion']).' '.$camion['couleur_camion'].' immatriculé '.$camion['numplaque_camion'].'</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><b>TOTAL</b></td>
+                                                    <td><b>'.$row['prix_commande'].' FCFA</b></td>
+                                                </tr>
+                                            </table>
+                                            <p>Vous serez livrés à ladite date <b>après paiement dans les délais.</b></p><br>
+                                        </body>
+                                    </html>
+                                ';
+                            }
 
-                $prixcommune = [
-
-                    "cocody"=>1.1,
-
-                    "abobo"=>1.1,
-                    "adjame"=>1.1,
-                    "plateau"=>1.1,
-                    "marcory"=>1.1,
-                    "koumassi"=>1.1,
-                    
-                    "attecoube"=>1.2,
-                    "portbouet"=>1.2,
-                    "treichville"=>1.2,
-
-                    "yopougon"=>1.3,
-                    "anyama"=>1.3,
-                    "bingerville"=>1.3,
-
-                ];
-
-                $prixsable=$quantitesable*$kilosable;
-                $prixlivraison=intval($prixsable*$prixcommune[$lieulivraison] / 1000) * 1000;
-
-                die(json_encode(['success'=>$livraisonpossible,'data'=>[
-                    'quantitesable'=>$quantitesable,
-                    'datelivraison'=>$datelivraison,
-                    'heurelivraison'=>$heurelivraison,
-                    'jourlivraison'=>$jourlivraison,
-                    'lieulivraison'=>$lieulivraison,
-                    'prixtotal'=>$prixlivraison,
-                    'message'=>(!$livraisonpossible) ? 'Aucun camion disponible' : null,
-                ]]));
-			}
-        }elseif($action=='commander'){
-            $livraisonpossible=true;
-			if(isset($_POST['quantitesable'],$_POST['datelivraison'],$_POST['lieulivraison'])){
-                $quantitesable=$_POST['quantitesable'];
-                $datelivraison=date("Y-m-d H:i", strtotime($_POST['datelivraison']));
-                $datelivraison_m90=date_sub(date_create($datelivraison),date_interval_create_from_date_string("90 minutes"))->format('Y-m-d H:i');
-                $datelivraison_p90=date_add(date_create($datelivraison),date_interval_create_from_date_string("90 minutes"))->format('Y-m-d H:i');
-                $lieulivraison=$_POST['lieulivraison'];
-                $heurelivraison = intval(date("H", strtotime($_POST['datelivraison'])));
-                $jourlivraison = intval(date("w", strtotime($_POST['datelivraison'])));
-                if($jourlivraison == 0 or ($heurelivraison <=7 or $heurelivraison >= 17)){
-                    $livraisonpossible=false;
-                }
-                if($livraisonpossible){
-                    // chercher les camions dispo
-                    $camions_dispo_sql="SELECT id_camion
-                    FROM camion c
-                    WHERE NOT EXISTS (
-                        SELECT * FROM panne p 
-                        WHERE p.id_camion = c.id_camion 
-                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') ) ORDER BY id_panne LIMIT 1
-                    ) AND NOT EXISTS(
-                        SELECT * FROM commande com 
-                        WHERE com.id_camion = c.id_camion 
-                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') )
-                    ) ORDER BY RAND() LIMIT 1;";
-                    $camions_dispo=$conn->query($camions_dispo_sql);
-                    if ($camions_dispo->num_rows == 0 ) { 
-                        $livraisonpossible=false;
-                    }else{
-                        while($row = $camions_dispo->fetch_assoc()) {
-                            $id_camion=$row["id_camion"];
+                            // To send HTML emails, remember to set the Content-type header
+                            $headers = "MIME-Version: 1.0" . "\r\n";
+                            $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+                            mail($to, $subject, $message, $headers);
                         }
                     }
                 }
-                // calculer prix
-                $kilosable=250;
-                $prixgonflé = 300; // 1h avant de fermer, samedis soirs
-                if($heurelivraison==16 or ($jourlivraison==6 and $heurelivraison > 12)){
-                    $kilosable=$prixgonflé;
-                }
-                $prixlivraison=0;
-
-                $prixcommune = [
-
-                    "cocody"=>1.1,
-
-                    "abobo"=>1.1,
-                    "adjame"=>1.1,
-                    "plateau"=>1.1,
-                    "marcory"=>1.1,
-                    "koumassi"=>1.1,
-                    
-                    "attecoube"=>1.2,
-                    "portbouet"=>1.2,
-                    "treichville"=>1.2,
-
-                    "yopougon"=>1.3,
-                    "anyama"=>1.3,
-                    "bingerville"=>1.3,
-
-                ];
-
-                $prixsable=$quantitesable*$kilosable;
-                $prixlivraison=intval($prixsable*$prixcommune[$lieulivraison] / 1000) * 1000;
-                if($livraisonpossible){
-                    $stmt = $conn->prepare("INSERT INTO commande (
-                        id_client,
-                        id_camion,
-                        datelivraison_commande,
-                        lieulivraison_commande,
-                        quantitesable_commande,
-                        prix_commande,
-                        date_commande
-                    ) VALUES (?, ?, ?, ?, ?, ?, NOW())");
-					$stmt->bind_param("iissii", $_SESSION['id_client'],$id_camion,$datelivraison,$lieulivraison,$quantitesable,$prixlivraison);
-					$stmt->execute();
-                }
-                die(json_encode(['success'=>$livraisonpossible,'data'=>[
-                    'message'=>(!$livraisonpossible) ? 'Aucun camion disponible' : 'Commande effectuée avec succès',
+                die(json_encode(['success'=>$success,'data'=>[
+                    'message'=>(!$success) ? 'impossible de valider' : 'commande validée avec succès',
                 ]]));
 			}
+        }elseif($action=='cancel'){
+            $success=true;
+            die(json_encode(['success'=>$success,'data'=>[
+                'message'=>(!$success) ? 'impossible d\'annuler' : 'commande annulée avec succès',
+            ]]));
         }
     }
 ?>

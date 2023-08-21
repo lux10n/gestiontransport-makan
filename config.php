@@ -12,7 +12,7 @@ function customname($name){
     return $name.' | '.APP_NAME;
 }
 $conn = new mysqli(DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME);
-$commmunes=[
+$communes=[
     "abobo"=>"Abobo",
     "anyama"=>"Anyama",
     "adjame"=>"Adjamé",
@@ -33,9 +33,6 @@ if ($conn->connect_error) {
 
 // Set to true to allow error reporting, false otherwise
 define('DEBUG', true);
-
-// Set default timezone
-date_default_timezone_set('Europe/Paris');
 
 // Set error reporting based on DEBUG
 if(DEBUG){

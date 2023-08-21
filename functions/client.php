@@ -23,11 +23,11 @@
                     WHERE NOT EXISTS (
                         SELECT * FROM panne p 
                         WHERE p.id_camion = c.id_camion 
-                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') ) ORDER BY id_panne LIMIT 1
+                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %H:%i') ) ORDER BY id_panne LIMIT 1
                     ) AND NOT EXISTS(
                         SELECT * FROM commande com 
                         WHERE com.id_camion = c.id_camion 
-                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') )
+                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison_m90."','%Y-%m-%d %H:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison_p90."','%Y-%m-%d %H:%i') )
                     );";
                     $camions_dispo=$conn->query($camions_dispo_sql);
                     if ($camions_dispo->num_rows == 0 ) { 
@@ -95,11 +95,11 @@
                     WHERE NOT EXISTS (
                         SELECT * FROM panne p 
                         WHERE p.id_camion = c.id_camion 
-                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') ) ORDER BY id_panne LIMIT 1
+                        AND (p.datefin_panne IS NULL OR p.datefin_panne >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %H:%i') ) ORDER BY id_panne LIMIT 1
                     ) AND NOT EXISTS(
                         SELECT * FROM commande com 
                         WHERE com.id_camion = c.id_camion 
-                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison."','%Y-%m-%d %h:%i') )
+                        AND (com.datelivraison_commande >= STR_TO_DATE('".$datelivraison_m90."','%Y-%m-%d %H:%i') AND com.datelivraison_commande <= STR_TO_DATE('".$datelivraison_p90."','%Y-%m-%d %H:%i') )
                     ) ORDER BY RAND() LIMIT 1;";
                     $camions_dispo=$conn->query($camions_dispo_sql);
                     if ($camions_dispo->num_rows == 0 ) { 

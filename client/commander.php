@@ -15,13 +15,11 @@
 		<meta name="description" content=""/>
 		<meta name="author" content=""/>
 		<title><?php echo(customname('Commander une Livraison')) ?></title>
-		<!-- Core theme CSS (includes Bootstrap)-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 		<link rel="stylesheet" href="../assets/css/dashboard.css">
     </head>
     <body>
         <div class="d-flex" id="wrapper">
-            <!-- Sidebar-->
             <div class="border-end bg-white" id="sidebar-wrapper">
                 <div class="sidebar-heading border-bottom bg-light"><?php echo APP_NAME; ?></div>
                 <div class="list-group list-group-flush">
@@ -30,9 +28,7 @@
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/client/commandes.php">Mes commandes</a>
                 </div>
             </div>
-            <!-- Page content wrapper-->
             <div id="page-content-wrapper">
-                <!-- Top navigation-->
                 <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
                     <div class="container-fluid">
                         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
@@ -51,7 +47,6 @@
                         </div>
                     </div>
                 </nav>
-                <!-- Page content-->
                 <div class="container-fluid px-5">
                     <h1 class="mt-4">Commander une livraison</h1>
                     <div class="row gx-5 mt-5">
@@ -115,10 +110,8 @@
                 </div>
             </div>
         </div>
-        <!-- Bootstrap core JS-->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
-        <!-- Core theme JS-->
         <script>
             var commmunes={
                 "abobo":"Abobo",
