@@ -14,7 +14,7 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<meta name="description" content=""/>
 		<meta name="author" content=""/>
-		<title><?php echo(customname('Portail Client')) ?></title>
+		<title><?php echo(customname('Portail Administrateur')) ?></title>
 		<!-- Core theme CSS (includes Bootstrap)-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
 		<link rel="stylesheet" href="../assets/css/dashboard.css">
@@ -26,8 +26,9 @@
                 <div class="sidebar-heading border-bottom bg-light"><?php echo APP_NAME; ?></div>
                 <div class="list-group list-group-flush">
 					<a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/" >Tableau de bord</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commander.php">Commander une livraison</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commandes.php">Mes commandes</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commandes.php">Commandes</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
                 </div>
             </div>
             <!-- Page content wrapper-->
@@ -41,8 +42,8 @@
                                 <li class="nav-item dropdown">
                                     <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><?php echo $_SESSION['nom_admin'].' '.$_SESSION['prenom_admin']; ?></a>
                                     <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                        <a class="dropdown-item" href="commander.php">Commander une livraison</a>
-                                        <a class="dropdown-item" href="commandes.php">Mes commandes</a>
+                                        <a class="dropdown-item" href="/gestiontransport/admin/commandes.php">Commandes</a>
+                                        <a class="dropdown-item" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
                                         <div class="dropdown-divider"></div>
                                         <a class="dropdown-item" href="../logout.php">Déconnexion</a>
                                     </div>
@@ -54,7 +55,7 @@
                 <!-- Page content-->
                 <div class="container-fluid">
                     <h1 class="mt-4">Bienvenue, <?php echo $_SESSION['nom_admin'].' '.$_SESSION['prenom_admin']; ?></h1>
-                    <p>Vos livraisons pour cette semaine : <a class="btn btn-primary mx-3" href="commander.php">Commander une livraison</a></p>
+                    <p class="mt-3">Vos livraisons pour cette semaine :</p>
 					<div class="row mb-4">
 						<div class="col">
 							<table class="table table-bordered table-hover table-striped">
@@ -93,16 +94,16 @@
                                                         echo "<td>".$row['quantitesable_commande']." KG</td>";
                                                         echo "<td>".$row['datelivraison_commande']."</td>";
                                                         echo "<td>".$commmunes[$row['lieulivraison_commande']]."</td>";
-                                                        echo "<td>Camion ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
+                                                        echo "<td>Camion ".$camion['marque_camion']." ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
                                                         echo "<td>".$row['prix_commande']."</td>";
                                                         switch ($row['statut_commande']) {
                                                             case 'validated':
                                                                 echo "<td><span class='text-success'>Validé</span></td>";
-                                                                echo "<td><button class='btn btn-danger'>Annuler</button></td>";
+                                                                echo "<td><button class='btn btn-danger' onclick=cancel(".$row['id_commande'].")>Annuler</button></td>";
                                                                 break;
                                                             default:
                                                                 echo "<td><span class='text-warning'>En Attente</span></td>";
-                                                                echo "<td><button class='btn btn-success'>Valider</button></td>";
+                                                                echo "<td><button class='btn btn-success' onclick=validate(".$row['id_commande'].")>Valider</button></td>";
                                                                 break;
                                                         }
                                                         echo "</tr>";
@@ -174,7 +175,32 @@
         <script src="https://code.jquery.com/jquery-3.7.0.min.js" crossorigin="anonymous"></script>
         <!-- Core theme JS-->
         <script>
-
+            function validate(id){
+                $.ajax({
+                    url:'../functions/admin.php',
+                    method:'POST',
+                    data:'action=validate&id_commande='+id,
+                    error:function(){
+                        alert('Une erreur est survenue, veuillez rééssayer.')
+                    },
+                    complete:function(){
+                        location.reload();
+                    }
+                })
+            }
+            function cancel(id){
+                $.ajax({
+                    url:'../functions/admin.php',
+                    method:'POST',
+                    data:'action=cancel&id_commande='+id,
+                    error:function(){
+                        alert('Une erreur est survenue, veuillez rééssayer.')
+                    },
+                    complete:function(){
+                        location.reload();
+                    }
+                })
+            }
         </script>
     </body>
 </html>

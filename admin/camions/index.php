@@ -1,10 +1,10 @@
 <?php
-    require('../config.php');
+    require('../../config.php');
     if(!isset($_SESSION['role'])){
-        header('Location: ../login.php');
+        header('Location: ../../login.php');
     }
 	if($_SESSION['role']!='admin'){
-        header('Location: ../login.php');
+        header('Location: ../../login.php');
     }
 ?>
 <!DOCTYPE html>
@@ -14,10 +14,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 		<meta name="description" content=""/>
 		<meta name="author" content=""/>
-		<title><?php echo(customname('Commandes')) ?></title>
+		<title><?php echo(customname('Gestion des véhicules')) ?></title>
 		<!-- Core theme CSS (includes Bootstrap)-->
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
-		<link rel="stylesheet" href="../assets/css/dashboard.css">
+		<link rel="stylesheet" href="../../assets/css/dashboard.css">
     </head>
     <body>
         <div class="d-flex" id="wrapper">
@@ -26,8 +26,8 @@
                 <div class="sidebar-heading border-bottom bg-light"><?php echo APP_NAME; ?></div>
                 <div class="list-group list-group-flush">
 					<a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/" >Tableau de bord</a>
-                    <a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/commandes.php">Commandes</a>
-                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
+                    <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/commandes.php">Commandes</a>
+                    <a class="list-group-item list-group-item-action list-group-item-primary p-3" href="/gestiontransport/admin/camions/">Gestion des véhicules</a>
                     <a class="list-group-item list-group-item-action list-group-item-light p-3" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
                 </div>
             </div>
@@ -45,7 +45,7 @@
                                         <a class="dropdown-item" href="/gestiontransport/admin/commandes.php">Commandes</a>
                                         <a class="dropdown-item" href="/gestiontransport/admin/camions/etat.php">Etat des véhicules</a>
                                         <div class="dropdown-divider"></div>
-                                        <a class="dropdown-item" href="../logout.php">Déconnexion</a>
+                                        <a class="dropdown-item" href="../../logout.php">Déconnexion</a>
                                     </div>
                                 </li>
                             </ul>
@@ -54,8 +54,8 @@
                 </nav>
                 <!-- Page content-->
                 <div class="container-fluid">
-                    <h1 class="my-4">Commandes de livraison de sable</h1>
-					<div class="row mb-4">
+                    <h1 class="my-4">Liste des véhicules - <?php echo APP_NAME; ?> <a class="btn btn-primary mx-3" href="enregistrer.php">Enregistrer un véhicule</a></h1>
+                    <div class="row mb-4">
 						<div class="col">
 							<table class="table table-bordered table-hover table-striped">
 								<thead>
@@ -74,7 +74,7 @@
 								</thead>
 								<tbody>
 									<?php 
-										$sql = "SELECT * FROM commande ORDER BY id_commande DESC";
+										$sql = "SELECT *, (DATE(NOW()) - INTERVAL 7 DAY) AS diff FROM commande WHERE date_commande >= (DATE(NOW()) - INTERVAL 7 DAY) ORDER BY id_commande DESC";
 										$result = $conn->query($sql);
 										if ($result->num_rows > 0 ) {
 											while($row = $result->fetch_assoc()) {
@@ -127,7 +127,7 @@
         <script>
             function validate(id){
                 $.ajax({
-                    url:'../functions/admin.php',
+                    url:'../../functions/admin.php',
                     method:'POST',
                     data:'action=validate&id_commande='+id,
                     error:function(){
@@ -140,7 +140,7 @@
             }
             function cancel(id){
                 $.ajax({
-                    url:'../functions/admin.php',
+                    url:'../../functions/admin.php',
                     method:'POST',
                     data:'action=cancel&id_commande='+id,
                     error:function(){

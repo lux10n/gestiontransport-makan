@@ -85,7 +85,7 @@
 													echo "<td>".$row['quantitesable_commande']." KG</td>";
 													echo "<td>".$row['datelivraison_commande']."</td>";
 													echo "<td>".$commmunes[$row['lieulivraison_commande']]."</td>";
-													echo "<td>Camion ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
+													echo "<td>Camion ".$camion['marque_camion']." ".$camion['couleur_camion']." (".$camion['numplaque_camion'].")</td>";
 													echo "<td>".$row['prix_commande']."</td>";
 													switch ($row['statut_commande']) {
 														case 'validated':
